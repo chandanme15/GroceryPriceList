@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/sample_main_layout">
+
+    <FrameLayout
+        android:id="@+id/sample_content_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <LinearLayout
+            android:id="@+id/error"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="50dp">
+
+            <ImageView
+                android:id="@+id/imgview"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:src="@mipmap/nointernet_connection"
+                android:layout_gravity="center"
+                android:visibility="visible"
+                android:layout_marginBottom="24dp"
+                android:contentDescription="@string/todo" />
+
+            <TextView
+                android:id="@+id/err_mssg_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/something_went_wrong"
+                android:layout_marginBottom="5dp"
+                android:textColor="#4A4A4A"
+                android:visibility="visible"
+                android:fontFamily="@font/roboto_bold"
+                android:textSize="18sp"/>
+
+            <TextView
+                android:id="@+id/err_mssg_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#929292"
+                android:fontFamily="@font/quicksand_regular"
+                android:visibility="visible"
+                android:text="@string/an_alien_is_probably_blocking_your_signal"
+                android:textSize="15sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" />
+            <Button
+                android:id="@+id/retry_button"
+                android:layout_width="328dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                android:visibility="gone"
+                android:layout_gravity="center_horizontal|bottom"
+                android:textColor="#000000"
+                android:layout_marginBottom="45dp"
+                android:text="@string/retry"
+                android:textSize="15sp"
+                android:fontFamily="@font/roboto_medium"
+                android:background="@drawable/black_border"/>
+        <LinearLayout
+            android:id="@+id/loading"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:gravity="center_vertical">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="21dp"
+                android:background="#E8E8E8" />
+
+            <LinearLayout
+                android:layout_width="160dp"
+                android:layout_height="10dp"
+                android:layout_marginBottom="16dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/loading_rectangle"/>
+
+            <LinearLayout
+                android:layout_width="120dp"
+                android:layout_height="10dp"
+                android:layout_marginBottom="16dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/loading_rectangle"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:layout_marginStart="36dp"
+                android:layout_marginEnd="36dp"
+                android:layout_marginBottom="21dp"
+
+                android:background="@drawable/loading_rectangle"/>
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</LinearLayout>
