@@ -60,31 +60,34 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
     }
 
     public void sortDataByState(){
-        new SortingTask(mData).execute(false);
+        new SortingTask(mData, this).execute(false);
     }
 
     public void sortDataByModalPrice(){
-        new SortingTask(mData).execute(true);
+        new SortingTask(mData, this).execute(true);
     }
 
-    private class SortingTask extends AsyncTask<Boolean, Void, DiffUtil.DiffResult> {
+    @SuppressWarnings("rawtypes")
+    private static class SortingTask extends AsyncTask<Boolean, Void, DiffUtil.DiffResult> {
 
         List<Record> mList;
+        RecyclerView.Adapter mAdapter;
 
-        SortingTask(List<Record> recordList) {
+        SortingTask(List<Record> recordList, RecyclerView.Adapter adapter) {
             mList = recordList;
+            mAdapter = adapter;
         }
 
         @Override
         protected DiffUtil.DiffResult doInBackground(Boolean... booleans) {
-            List<Record> oldList = new ArrayList<>(mData);
+            List<Record> oldList = new ArrayList<>(mList);
             if(booleans[0]) {
-                Collections.sort(mData, (o1, o2) -> (Integer.compare(Integer.parseInt(o1.getModal_price()), Integer.parseInt(o2.getModal_price()))));
+                Collections.sort(mList, (o1, o2) -> (Integer.compare(Integer.parseInt(o1.getModal_price()), Integer.parseInt(o2.getModal_price()))));
             }
             else {
-                Collections.sort(mData, (o1, o2) -> o1.getState().compareTo(o2.getState()));
+                Collections.sort(mList, (o1, o2) -> o1.getState().compareTo(o2.getState()));
             }
-            RecordDiffCallback diffCallback = new RecordDiffCallback(oldList, mData);
+            RecordDiffCallback diffCallback = new RecordDiffCallback(oldList, mList);
             DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffCallback);
             return diffResult;
         }
@@ -93,7 +96,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
         protected void onPostExecute(DiffUtil.DiffResult diffResult) {
             super.onPostExecute(diffResult);
             if(diffResult != null) {
-                diffResult.dispatchUpdatesTo(MainAdapter.this);
+                diffResult.dispatchUpdatesTo(mAdapter);
             }
         }
     }
