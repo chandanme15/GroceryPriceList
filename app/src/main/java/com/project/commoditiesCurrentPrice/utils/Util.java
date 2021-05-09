@@ -63,8 +63,7 @@ public class Util {
         if (isError)
             color = Color.RED;
 
-        Snackbar snackbar = Snackbar
-                .make(view, message, Snackbar.LENGTH_SHORT);
+        Snackbar snackbar = Snackbar.make(view, message, Snackbar.LENGTH_SHORT);
 
         View sbView = snackbar.getView();
         TextView textView = sbView.findViewById(R.id.snackbar_text);

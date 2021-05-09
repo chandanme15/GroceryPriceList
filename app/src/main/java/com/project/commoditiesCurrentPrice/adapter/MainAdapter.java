@@ -1,5 +1,6 @@
 package com.project.commoditiesCurrentPrice.adapter;
 
+import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,8 +8,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.project.commoditiesCurrentPrice.callbacks.RecordDiffCallback;
 import com.project.commoditiesCurrentPrice.model.Record;
 import com.project.commoditiesCurrentPrice.R;
 
@@ -18,7 +21,7 @@ import java.util.List;
 
 public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
 
-    private static List<Record> mData = new ArrayList<>();
+    private final List<Record> mData = new ArrayList<>();
 
     public MainAdapter(){}
 
@@ -33,14 +36,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder mViewHolder, int position) {
-        Record data = mData.get(position);
-        if(data.getMarket() != null) mViewHolder.setMarket(data.getMarket());
-        if(data.getCommodity() != null) mViewHolder.setCommodity(data.getCommodity());
-        if(data.getDistrict() != null && data.getState() != null)
-            mViewHolder.setRegion(data.getDistrict() + ", " + data.getState());
-        if (data.getMin_price() != null) mViewHolder.setMinPrice(data.getMin_price());
-        if (data.getModal_price() != null) mViewHolder.setModalPrice(data.getModal_price());
-        if (data.getMax_price() != null) mViewHolder.setMaxPrice(data.getMax_price());
+        mViewHolder.bind(mData.get(position));
     }
 
     @Override
@@ -57,30 +53,49 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
         notifyDataSetChanged();
     }
 
-    public boolean addData(List<Record> recordList){
-        boolean bRet = mData.addAll(recordList);
-        notifyDataSetChanged();
-        return bRet;
+    public void addData(List<Record> recordList){
+        int oldSize = mData.size();
+        mData.addAll(recordList);
+        notifyItemRangeInserted(oldSize, recordList.size());
     }
 
     public void sortDataByState(){
-        try{
-            Collections.sort(mData, (o1, o2) -> o1.getState().compareTo(o2.getState()));
-        }
-        catch (Exception e) {
-
-        }
-        notifyDataSetChanged();
+        new SortingTask(mData).execute(false);
     }
 
     public void sortDataByModalPrice(){
-        try{
-            Collections.sort(mData, (o1, o2) -> (Integer.compare(Integer.parseInt(o1.getModal_price()), Integer.parseInt(o2.getModal_price()))));
-        }
-        catch (Exception e) {
+        new SortingTask(mData).execute(true);
+    }
 
+    private class SortingTask extends AsyncTask<Boolean, Void, DiffUtil.DiffResult> {
+
+        List<Record> mList;
+
+        SortingTask(List<Record> recordList) {
+            mList = recordList;
         }
-        notifyDataSetChanged();
+
+        @Override
+        protected DiffUtil.DiffResult doInBackground(Boolean... booleans) {
+            List<Record> oldList = new ArrayList<>(mData);
+            if(booleans[0]) {
+                Collections.sort(mData, (o1, o2) -> (Integer.compare(Integer.parseInt(o1.getModal_price()), Integer.parseInt(o2.getModal_price()))));
+            }
+            else {
+                Collections.sort(mData, (o1, o2) -> o1.getState().compareTo(o2.getState()));
+            }
+            RecordDiffCallback diffCallback = new RecordDiffCallback(oldList, mData);
+            DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffCallback);
+            return diffResult;
+        }
+
+        @Override
+        protected void onPostExecute(DiffUtil.DiffResult diffResult) {
+            super.onPostExecute(diffResult);
+            if(diffResult != null) {
+                diffResult.dispatchUpdatesTo(MainAdapter.this);
+            }
+        }
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -105,32 +120,14 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
             mSubItem = mView.findViewById(R.id.subItem);
         }
 
-        void setMarket(String market) {
-            mMarket.setText(market);
-        }
-
-        void setCommodity(String commodity) {
-            mCommodity.setText(commodity);
-        }
-
-        void setRegion(String region) {
-            mRegion.setText(region);
-        }
-
-        void setModalPrice(String modalPrice) {
-            mModalPrice.setText(modalPrice);
-        }
-
-        void setMinPrice(String minPrice) {
-            mMinPrice.setText(minPrice);
-        }
-
-        void setMaxPrice(String maxPrice) {
-            mMaxPrice.setText(maxPrice);
-        }
-
-        void setSubItemVisibility(boolean isVisible) {
-            mSubItem.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        public void bind(Record record) {
+            if(record.getMarket() != null) mMarket.setText(record.getMarket());
+            if(record.getCommodity() != null) mCommodity.setText(record.getCommodity());
+            if(record.getDistrict() != null && record.getState() != null)
+                mRegion.setText(String.format("%s, %s", record.getDistrict(), record.getState()));
+            if (record.getMin_price() != null) mMinPrice.setText(record.getMin_price());
+            if (record.getModal_price() != null) mModalPrice.setText(record.getModal_price());
+            if (record.getMax_price() != null) mMaxPrice.setText(record.getMax_price());
         }
     }
 }

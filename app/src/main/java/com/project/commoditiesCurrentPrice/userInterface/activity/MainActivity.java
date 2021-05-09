@@ -10,6 +10,7 @@ import androidx.core.app.ActivityCompat;
 import com.project.commoditiesCurrentPrice.R;
 import com.project.commoditiesCurrentPrice.userInterface.base.BaseActivity;
 import com.project.commoditiesCurrentPrice.userInterface.fragment.MainFragment;
+import com.project.commoditiesCurrentPrice.utils.Util;
 
 public class MainActivity extends BaseActivity {
 

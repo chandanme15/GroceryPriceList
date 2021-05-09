@@ -20,13 +20,21 @@ import io.reactivex.disposables.Disposable;
 
 public class Repository {
 
+    private static Repository instance;
     private RecordsDB recordsDB;
     private APIService apiService;
     private CompositeDisposable disposable;
     private Map<String, String> queryMap;
 
-    public static Repository getNewInstance(Context context) {
-        return new Repository(context);
+    public static Repository getInstance(Context context) {
+        if(null == instance) {
+            synchronized (Repository.class) {
+                if(null == instance) {
+                    instance = new Repository(context);
+                }
+            }
+        }
+        return instance;
     }
 
     private Repository(Context context) {

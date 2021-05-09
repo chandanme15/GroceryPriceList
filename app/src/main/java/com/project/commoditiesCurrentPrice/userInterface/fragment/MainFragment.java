@@ -3,6 +3,7 @@ package com.project.commoditiesCurrentPrice.userInterface.fragment;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -34,6 +35,8 @@ import java.util.Objects;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import static android.content.ContentValues.TAG;
 
 public class MainFragment extends BaseFragment<MainViewModel> implements SwipeRefreshLayout.OnRefreshListener, MainViewModel.DatabaseProcessInterface {
 
@@ -74,7 +77,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements SwipeRe
 
     @Override
     public MainViewModel getViewModel() {
-        MainViewModelFactory factory = new MainViewModelFactory(Repository.getNewInstance(Application.getInstance()), this);
+        MainViewModelFactory factory = new MainViewModelFactory(Repository.getInstance(Application.getInstance()), this);
         return new ViewModelProvider(this, factory).get(MainViewModel.class);
     }
 
@@ -89,18 +92,25 @@ public class MainFragment extends BaseFragment<MainViewModel> implements SwipeRe
                              Bundle savedInstanceState) {
         mView = inflater.inflate(R.layout.main_fragment, container, false);
         ButterKnife.bind(this, mView);
-        initView();
+        initViewsAndVariables();
         setupRecycler();
-        initMembers();
+        setLiveDataObserver();
+        LoadData();
+        printTestLog();
         return mView;
     }
 
-    private void initMembers() {
+    private void initViewsAndVariables() {
+        mSwipeRefreshLayout.setColorSchemeResources(android.R.color.black);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+        if (getActivity() != null) {
+            getActivity().findViewById(R.id.retry_button).setOnClickListener(this::retry);
+        }
+        showLoading(true);
+        showError(View.GONE);
         m_bIsAPIDataLoading = false;
         m_bIsDataLoadedFromDB = false;
         Constants.PAGE_COUNT = 1;
-        showLoading(true);
-        showError(View.GONE);
     }
 
     private void setLiveDataObserver() {
@@ -168,11 +178,9 @@ public class MainFragment extends BaseFragment<MainViewModel> implements SwipeRe
         switch (item.getItemId()) {
             case R.id.menu_sort_by_price:
                 mAdapter.sortDataByModalPrice();
-                mRecyclerView.scrollToPosition(0);
                 break;
             case R.id.menu_sort_by_states:
                 mAdapter.sortDataByState();
-                mRecyclerView.scrollToPosition(0);
                 break;
             case R.id.menu_refresh:
                 mRecyclerView.scrollToPosition(0);
@@ -184,20 +192,11 @@ public class MainFragment extends BaseFragment<MainViewModel> implements SwipeRe
         return true;
     }
 
-    private void initView() {
-        mSwipeRefreshLayout.setColorSchemeResources(android.R.color.black);
-        mSwipeRefreshLayout.setOnRefreshListener(this);
-        if (getActivity() != null) {
-            getActivity().findViewById(R.id.retry_button).setOnClickListener(this::retry);
-        }
-    }
-
     private void setupRecycler() {
         mLayoutManager = new LinearLayoutManager(Application.getInstance());
         mAdapter = new MainAdapter();
         mRecyclerView.setLayoutManager(mLayoutManager);
-        int scrollPosition = 0;
-        mRecyclerView.scrollToPosition(scrollPosition);
+        mRecyclerView.scrollToPosition(0);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(Application.getInstance(), DividerItemDecoration.VERTICAL));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -228,6 +227,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements SwipeRe
 
     @Override
     public void onReadRecordFromDBCompleted(List<Record> recordList) {
+        viewModel.closeDatabase();
         Handler mHandler = new Handler(Looper.getMainLooper());
         mHandler.post(new Runnable() {
             @Override
@@ -275,17 +275,14 @@ public class MainFragment extends BaseFragment<MainViewModel> implements SwipeRe
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        setLiveDataObserver();
-        LoadData();
-    }
-
-    @Override
     public void onDestroy() {
         super.onDestroy();
         viewModel.onClear();
         viewModel.closeDatabase();
+    }
+
+    public void printTestLog() {
+        Log.d(TAG, "TestLog");
     }
 }
 

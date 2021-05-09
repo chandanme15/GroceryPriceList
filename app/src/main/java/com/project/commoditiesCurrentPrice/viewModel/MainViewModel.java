@@ -1,9 +1,9 @@
 package com.project.commoditiesCurrentPrice.viewModel;
 
-import android.os.AsyncTask;
 import android.os.Looper;
 
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 
 import com.project.commoditiesCurrentPrice.Application;
 import com.project.commoditiesCurrentPrice.model.Record;
@@ -22,14 +22,14 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
-public class MainViewModel extends BaseViewModel {
+public class MainViewModel extends ViewModel {
 
     private Repository repository;
     private MutableLiveData<List<Record>> apiData;
     private MutableLiveData<Boolean> error;
     private MainViewModel.DatabaseProcessInterface listener;
 
-    MainViewModel(Repository repository, MainViewModel.DatabaseProcessInterface listener){
+    public MainViewModel(Repository repository, MainViewModel.DatabaseProcessInterface listener){
         this.repository = repository;
         apiData = new MutableLiveData<>();
         error = new MutableLiveData<>();

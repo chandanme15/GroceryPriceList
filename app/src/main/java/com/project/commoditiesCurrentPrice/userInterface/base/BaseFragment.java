@@ -3,10 +3,13 @@ package com.project.commoditiesCurrentPrice.userInterface.base;
 import android.content.Context;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModel;
 
-import com.project.commoditiesCurrentPrice.viewModel.BaseViewModel;
+import com.project.commoditiesCurrentPrice.Application;
+import com.project.commoditiesCurrentPrice.repository.Repository;
+import com.project.commoditiesCurrentPrice.viewModel.MainViewModel;
 
-public abstract class BaseFragment<T extends BaseViewModel> extends Fragment {
+public abstract class BaseFragment<T extends ViewModel> extends Fragment {
     protected T viewModel;
     public abstract T getViewModel();
 
