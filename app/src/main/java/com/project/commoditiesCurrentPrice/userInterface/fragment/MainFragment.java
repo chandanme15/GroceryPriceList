@@ -48,7 +48,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements SwipeRe
     private MainAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private boolean m_bIsAPIDataLoading = false, m_bIsDataLoadedFromDB = false;
-    private RecyclerView.OnScrollListener mOnScrollListener = new RecyclerView.OnScrollListener() {
+    private final RecyclerView.OnScrollListener mOnScrollListener = new RecyclerView.OnScrollListener() {
         @Override
         public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
 
@@ -227,7 +227,6 @@ public class MainFragment extends BaseFragment<MainViewModel> implements SwipeRe
 
     @Override
     public void onReadRecordFromDBCompleted(List<Record> recordList) {
-        viewModel.closeDatabase();
         Handler mHandler = new Handler(Looper.getMainLooper());
         mHandler.post(new Runnable() {
             @Override

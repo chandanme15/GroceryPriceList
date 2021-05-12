@@ -9,9 +9,8 @@ import com.project.commoditiesCurrentPrice.Application;
 import com.project.commoditiesCurrentPrice.model.Record;
 import com.project.commoditiesCurrentPrice.model.RecordsModel;
 import com.project.commoditiesCurrentPrice.repository.Repository;
-import com.project.commoditiesCurrentPrice.utils.CacheTime;
 import com.project.commoditiesCurrentPrice.utils.Constants;
-import com.project.commoditiesCurrentPrice.utils.FileSystem;
+import com.project.commoditiesCurrentPrice.utils.SharedPreferencesHelper;
 import com.project.commoditiesCurrentPrice.utils.Util;
 
 import java.util.ArrayList;
@@ -24,10 +23,10 @@ import io.reactivex.schedulers.Schedulers;
 
 public class MainViewModel extends ViewModel {
 
-    private Repository repository;
-    private MutableLiveData<List<Record>> apiData;
-    private MutableLiveData<Boolean> error;
-    private MainViewModel.DatabaseProcessInterface listener;
+    private final Repository repository;
+    private final MutableLiveData<List<Record>> apiData;
+    private final MutableLiveData<Boolean> error;
+    private final MainViewModel.DatabaseProcessInterface listener;
 
     public MainViewModel(Repository repository, MainViewModel.DatabaseProcessInterface listener){
         this.repository = repository;
@@ -97,9 +96,7 @@ public class MainViewModel extends ViewModel {
                 Looper.prepare();
                 try {
                     if(pageCount == 1) {
-                        List<CacheTime> cacheTime = new ArrayList<>();
-                        cacheTime.add(new CacheTime(Long.parseLong(Util.getCurrentDateAndTime())));
-                        FileSystem.ReWriteFile(Application.getInstance(), Constants.DatabaseTimeFile, cacheTime);
+                        SharedPreferencesHelper.getInstance().setDBEntryTime(Util.getCurrentDateAndTime());
                         repository.deleteAllRecordsFromDB();
                     }
                     repository.insertRecordsToDB(recordList);
@@ -116,16 +113,13 @@ public class MainViewModel extends ViewModel {
     }
 
     public boolean bIsDatabaseExpired() {
-        try {
-            String temp = FileSystem.ReadFromFile(Application.getInstance(), Constants.DatabaseTimeFile).replaceAll("[\\D+]", "");
-            long lastSavedTime = temp.isEmpty() ? 0 : Long.parseLong(temp);
+        String dbEntryTime = SharedPreferencesHelper.getInstance().getDBEntryTime();
+        if(dbEntryTime != null) {
+            long lastSavedTime = dbEntryTime.isEmpty() ? 0 : Long.parseLong(dbEntryTime);
             long currentTime = Long.parseLong(Util.getCurrentDateAndTime());
             return (currentTime - lastSavedTime) > Constants.DB_EXPIRY_TIME;
         }
-        catch (Exception e) {
-            //
-        }
-        return false;
+        return true;
     }
 
     public void closeDatabase() {

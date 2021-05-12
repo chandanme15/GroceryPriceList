@@ -8,7 +8,7 @@ import com.project.commoditiesCurrentPrice.dbRoom.RecordsDB;
 import com.project.commoditiesCurrentPrice.model.Record;
 import com.project.commoditiesCurrentPrice.model.RecordsModel;
 import com.project.commoditiesCurrentPrice.utils.Constants;
-import com.project.commoditiesCurrentPrice.webService.service.APIService;
+import com.project.commoditiesCurrentPrice.restService.RestClient;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,10 +21,10 @@ import io.reactivex.disposables.Disposable;
 public class Repository {
 
     private static Repository instance;
-    private RecordsDB recordsDB;
-    private APIService apiService;
-    private CompositeDisposable disposable;
-    private Map<String, String> queryMap;
+    private final RecordsDB recordsDB;
+    private final RestClient restClient;
+    private final CompositeDisposable disposable;
+    private final Map<String, String> mQueryMap;
 
     public static Repository getInstance(Context context) {
         if(null == instance) {
@@ -39,14 +39,13 @@ public class Repository {
 
     private Repository(Context context) {
         recordsDB = Room.databaseBuilder(context, RecordsDB.class, RecordsDB.class.getName()).build();
-        apiService = new APIService(context);
+        restClient = new RestClient();
         disposable = new CompositeDisposable();
-        queryMap = new HashMap<>();
-        initApiQueryMap();
+        mQueryMap = initApiQueryMap();
     }
 
     public Observable<RecordsModel> getRecordsFromAPI(){
-        return apiService.getRecords(queryMap);
+        return restClient.getApi().getRecords(mQueryMap);
     }
 
     public void dispose() {
@@ -73,13 +72,15 @@ public class Repository {
         recordsDB.close();
     }
 
-    public void initApiQueryMap(){
+    public Map<String, String> initApiQueryMap(){
+        Map<String, String> queryMap = new HashMap<>();
         queryMap.put(Constants.QueryMap.ATTRIBUTE_API_KEY, Constants.API_KEY);
         queryMap.put(Constants.QueryMap.ATTRIBUTE_FORMAT, Constants.API_RESPONSE_FORMAT);
         queryMap.put(Constants.QueryMap.ATTRIBUTE_LIMIT, Constants.NO_OF_RECORDS_PER_REQUEST);
+        return queryMap;
     }
 
     public void updateApiQueryMap(){
-        queryMap.put(Constants.QueryMap.ATTRIBUTE_OFFSET, String.valueOf((Constants.PAGE_COUNT - 1) * 10));
+        mQueryMap.put(Constants.QueryMap.ATTRIBUTE_OFFSET, String.valueOf((Constants.PAGE_COUNT - 1) * 10));
     }
 }

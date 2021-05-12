@@ -15,6 +15,7 @@ import com.project.commoditiesCurrentPrice.callbacks.RecordDiffCallback;
 import com.project.commoditiesCurrentPrice.model.Record;
 import com.project.commoditiesCurrentPrice.R;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -70,24 +71,24 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
     @SuppressWarnings("rawtypes")
     private static class SortingTask extends AsyncTask<Boolean, Void, DiffUtil.DiffResult> {
 
-        List<Record> mList;
-        RecyclerView.Adapter mAdapter;
+        WeakReference<List<Record>> mListReference;
+        WeakReference<RecyclerView.Adapter> mAdapterReference;
 
-        SortingTask(List<Record> recordList, RecyclerView.Adapter adapter) {
-            mList = recordList;
-            mAdapter = adapter;
+        SortingTask(List<Record> list, RecyclerView.Adapter adapter) {
+            mListReference = new WeakReference<>(list);
+            mAdapterReference = new WeakReference<>(adapter);
         }
 
         @Override
         protected DiffUtil.DiffResult doInBackground(Boolean... booleans) {
-            List<Record> oldList = new ArrayList<>(mList);
+            List<Record> oldList = new ArrayList<>(mListReference.get());
             if(booleans[0]) {
-                Collections.sort(mList, (o1, o2) -> (Integer.compare(Integer.parseInt(o1.getModal_price()), Integer.parseInt(o2.getModal_price()))));
+                Collections.sort(mListReference.get(), (o1, o2) -> (Integer.compare(Integer.parseInt(o1.getModal_price()), Integer.parseInt(o2.getModal_price()))));
             }
             else {
-                Collections.sort(mList, (o1, o2) -> o1.getState().compareTo(o2.getState()));
+                Collections.sort(mListReference.get(), (o1, o2) -> o1.getState().compareTo(o2.getState()));
             }
-            RecordDiffCallback diffCallback = new RecordDiffCallback(oldList, mList);
+            RecordDiffCallback diffCallback = new RecordDiffCallback(oldList, mListReference.get());
             DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffCallback);
             return diffResult;
         }
@@ -96,7 +97,7 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.ViewHolder> {
         protected void onPostExecute(DiffUtil.DiffResult diffResult) {
             super.onPostExecute(diffResult);
             if(diffResult != null) {
-                diffResult.dispatchUpdatesTo(mAdapter);
+                diffResult.dispatchUpdatesTo(mAdapterReference.get());
             }
         }
     }

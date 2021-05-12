@@ -18,36 +18,6 @@ import java.util.Locale;
 
 public class Util {
 
-    public static int getYear(String mDate) {
-        Date date = null;
-        try {
-            date = new SimpleDateFormat("yyyy-MM-dd").parse(mDate);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return Integer.parseInt(new SimpleDateFormat("yyyy").format(date));
-    }
-
-    public static int getMonth(String mDate) {
-        Date date = null;
-        try {
-            date = new SimpleDateFormat("yyyy-MM-dd").parse(mDate);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return Integer.parseInt(new SimpleDateFormat("MM").format(date));
-    }
-
-    public static int getDay(String mDate) {
-        Date date = null;
-        try {
-            date = new SimpleDateFormat("yyyy-MM-dd").parse(mDate);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return Integer.parseInt(new SimpleDateFormat("dd").format(date));
-    }
-
     public static boolean isNetworkAvailable(Context context) {
         ConnectivityManager mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         // Test for connection

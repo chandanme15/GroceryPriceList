@@ -1,4 +1,4 @@
-package com.project.commoditiesCurrentPrice.webService.rest;
+package com.project.commoditiesCurrentPrice.restService;
 
 import com.project.commoditiesCurrentPrice.utils.Constants;
 import com.project.commoditiesCurrentPrice.BuildConfig;
@@ -15,7 +15,7 @@ import static com.project.commoditiesCurrentPrice.utils.Constants.REQUEST_TIME_O
 
 public class RestClient {
 
-    private RestApi restApi;
+    private final RestApi restApi;
 
     public RestClient() {
         Retrofit retrofit = new Retrofit.Builder()
@@ -31,7 +31,7 @@ public class RestClient {
     }
 
     //get and configure okhttp client
-    private static OkHttpClient getHttpClient() {
+    private OkHttpClient getHttpClient() {
 
         OkHttpClient.Builder client = new OkHttpClient.Builder();
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();

@@ -1,4 +1,4 @@
-package com.project.commoditiesCurrentPrice.webService.rest;
+package com.project.commoditiesCurrentPrice.restService;
 
 import com.project.commoditiesCurrentPrice.model.RecordsModel;
 

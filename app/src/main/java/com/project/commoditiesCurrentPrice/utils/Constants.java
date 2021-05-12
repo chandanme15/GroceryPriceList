@@ -3,11 +3,12 @@ package com.project.commoditiesCurrentPrice.utils;
 public class Constants {
 
     public static int PAGE_COUNT = 1;
-    public final static String BASE_URL = "https://api.data.gov.in/";
     public final static int REQUEST_TIME_OUT = 30;
-    //Database will be expired after every 4 hours
     public static final long DB_EXPIRY_TIME = 40000;
-    public static String DatabaseTimeFile = "DatabaseTime.txt";
+
+    public static final String DatabaseTime = "DatabaseTime";
+    public static final String DatabaseTimeFile = "DatabaseTime.txt";
+    public static final String BASE_URL = "https://api.data.gov.in/";
 
     //Query Map Params
     public final static String API_KEY = "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b";
