@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -22,6 +23,8 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.project.commoditiesCurrentPrice.Application;
 import com.project.commoditiesCurrentPrice.R;
 import com.project.commoditiesCurrentPrice.adapter.MainAdapter;
+import com.project.commoditiesCurrentPrice.databinding.ActivityMainBinding;
+import com.project.commoditiesCurrentPrice.databinding.MainFragmentBinding;
 import com.project.commoditiesCurrentPrice.model.Record;
 import com.project.commoditiesCurrentPrice.repository.Repository;
 import com.project.commoditiesCurrentPrice.userInterface.base.BaseFragment;
@@ -33,46 +36,23 @@ import com.project.commoditiesCurrentPrice.viewModel.MainViewModelFactory;
 import java.util.List;
 import java.util.Objects;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-
 import static android.content.ContentValues.TAG;
 
 public class MainFragment extends BaseFragment<MainViewModel> implements SwipeRefreshLayout.OnRefreshListener, MainViewModel.DatabaseProcessInterface {
 
-    @BindView(R.id.recyclerView)
-    RecyclerView mRecyclerView;
-    @BindView(R.id.swipeRefreshLayout)
-    SwipeRefreshLayout mSwipeRefreshLayout;
-    private View mView;
+    ActivityMainBinding activityMainBinding;
+    MainFragmentBinding mainFragmentBinding;
     private MainAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private boolean m_bIsAPIDataLoading = false, m_bIsDataLoadedFromDB = false;
-    private final RecyclerView.OnScrollListener mOnScrollListener = new RecyclerView.OnScrollListener() {
-        @Override
-        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+    private RecyclerView.OnScrollListener mOnScrollListener;
 
-            if (m_bIsAPIDataLoading) {
-                return;
-            }
-            int totalItemCount = mLayoutManager.getItemCount();
-            int lastVisibleItem = ((LinearLayoutManager) mLayoutManager).findLastVisibleItemPosition();
+    private MainFragment(ActivityMainBinding binding) {
+        activityMainBinding = binding;
+    }
 
-            if (totalItemCount > 1 && lastVisibleItem >= totalItemCount - 1) {
-                if (Util.isNetworkAvailable(Application.getInstance())) {
-                    if (!m_bIsDataLoadedFromDB) {
-                        Constants.PAGE_COUNT++;
-                    }
-                    displaySnackbar(false, getString(R.string.loading));
-                    LoadRecordsFromAPI();
-                }
-                //else displaySnackbar(true,"No internet Connection ! ");
-            }
-        }
-    };
-
-    public static MainFragment getInstance() {
-        return new MainFragment();
+    public static MainFragment getInstance(ActivityMainBinding binding) {
+        return new MainFragment(binding);
     }
 
     @Override
@@ -90,27 +70,58 @@ public class MainFragment extends BaseFragment<MainViewModel> implements SwipeRe
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mView = inflater.inflate(R.layout.main_fragment, container, false);
-        ButterKnife.bind(this, mView);
-        initViewsAndVariables();
+        mainFragmentBinding = MainFragmentBinding.inflate(inflater, container, false);
+        return mainFragmentBinding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        initViews();
+        intVariables();
+        setupListeners();
         setupRecycler();
         setLiveDataObserver();
         LoadData();
-        printTestLog();
-        return mView;
     }
 
-    private void initViewsAndVariables() {
-        mSwipeRefreshLayout.setColorSchemeResources(android.R.color.black);
-        mSwipeRefreshLayout.setOnRefreshListener(this);
-        if (getActivity() != null) {
-            getActivity().findViewById(R.id.retry_button).setOnClickListener(this::retry);
-        }
+    private void initViews() {
+        mainFragmentBinding.swipeRefreshLayout.setColorSchemeResources(android.R.color.black);
         showLoading(true);
-        showError(View.GONE);
+        showError(false);
+    }
+
+    private void intVariables() {
         m_bIsAPIDataLoading = false;
         m_bIsDataLoadedFromDB = false;
         Constants.PAGE_COUNT = 1;
+    }
+
+    private void setupListeners() {
+        mainFragmentBinding.swipeRefreshLayout.setOnRefreshListener(this);
+        activityMainBinding.retryButton.setOnClickListener(this::retry);
+        mOnScrollListener = new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+
+                if (m_bIsAPIDataLoading) {
+                    return;
+                }
+                int totalItemCount = mLayoutManager.getItemCount();
+                int lastVisibleItem = ((LinearLayoutManager) mLayoutManager).findLastVisibleItemPosition();
+
+                if (totalItemCount > 1 && lastVisibleItem >= totalItemCount - 1) {
+                    if (Util.isNetworkAvailable(Application.getInstance())) {
+                        if (!m_bIsDataLoadedFromDB) {
+                            Constants.PAGE_COUNT++;
+                        }
+                        displaySnackbar(false, getString(R.string.loading));
+                        LoadRecordsFromAPI();
+                    }
+                    //else displaySnackbar(true,"No internet Connection ! ");
+                }
+            }
+        };
     }
 
     private void setLiveDataObserver() {
@@ -131,7 +142,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements SwipeRe
                 displaySnackbar(true, getString(R.string.cant_load_records));
                 updateRefreshLayout(false);
                 if (mAdapter.getData().isEmpty()) {
-                    showError(View.VISIBLE);
+                    showError(true);
                 }
             }
         });
@@ -183,7 +194,7 @@ public class MainFragment extends BaseFragment<MainViewModel> implements SwipeRe
                 mAdapter.sortDataByState();
                 break;
             case R.id.menu_refresh:
-                mRecyclerView.scrollToPosition(0);
+                mainFragmentBinding.recyclerView.scrollToPosition(0);
                 onRefresh();
                 break;
             default:
@@ -195,19 +206,20 @@ public class MainFragment extends BaseFragment<MainViewModel> implements SwipeRe
     private void setupRecycler() {
         mLayoutManager = new LinearLayoutManager(Application.getInstance());
         mAdapter = new MainAdapter();
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mRecyclerView.scrollToPosition(0);
-        mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(Application.getInstance(), DividerItemDecoration.VERTICAL));
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerView.addOnScrollListener(mOnScrollListener);
+        RecyclerView recyclerView = mainFragmentBinding.recyclerView;
+        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.scrollToPosition(0);
+        recyclerView.setAdapter(mAdapter);
+        recyclerView.addItemDecoration(new DividerItemDecoration(Application.getInstance(), DividerItemDecoration.VERTICAL));
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.addOnScrollListener(mOnScrollListener);
     }
 
     private void retry(View view) {
         Constants.PAGE_COUNT = 1;
         m_bIsDataLoadedFromDB = false;
         showLoading(true);
-        showError(View.GONE);
+        showError(false);
         LoadData();
     }
 
@@ -237,12 +249,12 @@ public class MainFragment extends BaseFragment<MainViewModel> implements SwipeRe
                         mAdapter.clearData();
                     }
                     mAdapter.addData(recordList);
-                    showError(View.GONE);
+                    showError(false);
                     updateRefreshLayout(false);
                 } else if (Util.isNetworkAvailable(Application.getInstance())) {
                     LoadRecordsFromAPI();
                 } else {
-                    showError(View.VISIBLE);
+                    showError(true);
                     updateRefreshLayout(false);
                 }
             }
@@ -253,24 +265,26 @@ public class MainFragment extends BaseFragment<MainViewModel> implements SwipeRe
         if (!refresh) {
             showLoading(refresh);
         }
-        mSwipeRefreshLayout.setRefreshing(refresh);
+        mainFragmentBinding.swipeRefreshLayout.setRefreshing(refresh);
     }
 
-    private void showError(int Visibility) {
-        if (getActivity() != null) {
-            getActivity().findViewById(R.id.sample_main_layout).findViewById(R.id.error).setVisibility(Visibility);
-            getActivity().findViewById(R.id.sample_main_layout).findViewById(R.id.retry_button).setVisibility(Visibility);
-        }
+    private void showError(boolean visibility) {
+        activityMainBinding.error.setVisibility(visibility ? View.VISIBLE : View.GONE);
+        activityMainBinding.retryButton.setVisibility(visibility ? View.VISIBLE : View.GONE);
     }
 
-    private void showLoading(boolean Visibility) {
-        if (getActivity() != null) {
-            getActivity().findViewById(R.id.sample_main_layout).findViewById(R.id.loading).setVisibility(Visibility ? View.VISIBLE : View.GONE);
-        }
+    private void showLoading(boolean visibility) {
+        activityMainBinding.loading.setVisibility(visibility ? View.VISIBLE : View.GONE);
     }
 
     private void displaySnackbar(boolean isError, String message) {
-        Util.showSnack(mView, isError, message);
+        Util.showSnack(mainFragmentBinding.getRoot(), isError, message);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mainFragmentBinding = null;
     }
 
     @Override
