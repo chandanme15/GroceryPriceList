@@ -7,7 +7,6 @@ public class Constants {
     public static final long DB_EXPIRY_TIME = 40000;
 
     public static final String DatabaseTime = "DatabaseTime";
-    public static final String DatabaseTimeFile = "DatabaseTime.txt";
     public static final String BASE_URL = "https://api.data.gov.in/";
 
     //Query Map Params

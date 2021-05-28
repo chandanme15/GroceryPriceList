@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
 import android.view.View;
 import android.widget.TextView;
 
@@ -21,10 +22,16 @@ public class Util {
     public static boolean isNetworkAvailable(Context context) {
         ConnectivityManager mConnectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         // Test for connection
-        NetworkCapabilities mCapabilities = mConnectivityManager.getNetworkCapabilities(mConnectivityManager.getActiveNetwork());
-        return mCapabilities != null &&
-                (mCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-                        mCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR));
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            NetworkCapabilities mCapabilities = mConnectivityManager.getNetworkCapabilities(mConnectivityManager.getActiveNetwork());
+            return mCapabilities != null &&
+                    (mCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                            mCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR));
+        }
+        else {
+            NetworkInfo netInfo = mConnectivityManager.getActiveNetworkInfo();
+            return netInfo != null && netInfo.isConnected();
+        }
     }
 
     // Showing the status in Snackbar
